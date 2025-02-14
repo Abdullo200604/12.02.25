@@ -1,46 +1,78 @@
+import uuid
+
+
 class Basket:
-    def __init__(self, sana, mahsulotlar=None):
+    def __init__(self, sana):
+        self.id = str(uuid.uuid4())[:8]
         self.sana = sana
-        self.mahsulotlar = mahsulotlar if mahsulotlar else {}
+        self.mahsulotlar = {}
 
-    def add(self, mahsulot, miqdor):
-        if mahsulot in self.mahsulotlar:
-            self.mahsulotlar[mahsulot] += miqdor
+    def add(self, product_id, nomi, miqdor):
+        if product_id in self.mahsulotlar:
+            self.mahsulotlar[product_id] = (nomi, self.mahsulotlar[product_id][1] + miqdor)
         else:
-            self.mahsulotlar[mahsulot] = miqdor
-        print(f"{mahsulot} savatga {miqdor} dona qo'shildi.")
+            self.mahsulotlar[product_id] = (nomi, miqdor)
+        print(f"{nomi} ({product_id}) savatga {miqdor} dona qo'shildi.")
 
-    def remove(self, mahsulot, miqdor):
-        if mahsulot in self.mahsulotlar:
-            if self.mahsulotlar[mahsulot] > miqdor:
-                self.mahsulotlar[mahsulot] -= miqdor
-                print(f"{mahsulot} dan {miqdor} dona olib tashlandi.")
+    def remove(self, product_id, miqdor):
+        if product_id in self.mahsulotlar:
+            nomi, mavjud_miqdor = self.mahsulotlar[product_id]
+            if mavjud_miqdor > miqdor:
+                self.mahsulotlar[product_id] = (nomi, mavjud_miqdor - miqdor)
+                print(f"{nomi} ({product_id}) dan {miqdor} dona olib tashlandi.")
             else:
-                del self.mahsulotlar[mahsulot]
-                print(f"{mahsulot} butunlay olib tashlandi.")
+                del self.mahsulotlar[product_id]
+                print(f"{nomi} ({product_id}) butunlay olib tashlandi.")
         else:
-            print(f"{mahsulot} savatda mavjud emas.")
+            print(f"Mahsulot ID {product_id} savatda mavjud emas.")
 
     def show(self):
         if not self.mahsulotlar:
             print("Savat bo'sh.")
         else:
             print("Savat tarkibi:")
-            for mahsulot, miqdor in self.mahsulotlar.items():
-                print(f"- {mahsulot}: {miqdor} dona")
+            for product_id, (nomi, miqdor) in self.mahsulotlar.items():
+                print(f"- {nomi} ({product_id}): {miqdor} dona")
 
     def calc(self, narxlar):
         jami = 0
-        for mahsulot, miqdor in self.mahsulotlar.items():
-            if mahsulot in narxlar:
-                jami += narxlar[mahsulot] * miqdor
+        for product_id, (nomi, miqdor) in self.mahsulotlar.items():
+            if product_id in narxlar:
+                jami += narxlar[product_id] * miqdor
         print(f"Jami summa: {jami} so'm")
         return jami
 
-savat = Basket("2025-02-12")
-savat.add("Olma", 3)
-savat.add("Banan", 5)
-savat.remove("Olma", 2)
-savat.show()
-narxlar = {"Olma": 5000, "Banan": 7000}
-savat.calc(narxlar)
+
+def main():
+    savat = Basket("2025-02-12")
+    narxlar = {"1": 5000, "2": 7000}
+
+    while True:
+        print("\n1. Mahsulot qo'shish")
+        print("2. Mahsulot olib tashlash")
+        print("3. Savatni ko'rish")
+        print("4. Jami hisoblash")
+        print("5. Chiqish")
+        tanlov = input("Tanlovingiz: ")
+
+        if tanlov == "1":
+            product_id = input("Mahsulot ID: ")
+            nomi = input("Mahsulot nomi: ")
+            miqdor = int(input("Miqdor: "))
+            savat.add(product_id, nomi, miqdor)
+        elif tanlov == "2":
+            product_id = input("Mahsulot ID: ")
+            miqdor = int(input("Olib tashlanadigan miqdor: "))
+            savat.remove(product_id, miqdor)
+        elif tanlov == "3":
+            savat.show()
+        elif tanlov == "4":
+            savat.calc(narxlar)
+        elif tanlov == "5":
+            break
+        else:
+            print("Noto'g'ri tanlov, qayta urinib ko'ring!")
+
+
+if __name__ == "__main__":
+    main()
